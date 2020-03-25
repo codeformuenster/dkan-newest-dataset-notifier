@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/imroc/req"
 )
 
 type Datasets struct {
@@ -20,6 +23,12 @@ type Dataset struct {
 }
 
 type ISODate time.Time
+
+type PackageResponse struct {
+	Result []struct {
+		URL string `json:"url"`
+	} `json:"result"`
+}
 
 func (i *ISODate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
@@ -71,12 +80,24 @@ func (d *Datasets) Size() int {
 }
 
 // Compare compares the given Datasets with the current Datasets
-// func (d *Datasets) Compare(otherDatasets *Datasets) []*Dataset {
-// 	// primitively compare the first element
-// 	for _, dataset := range d.Dataset {
+func (d *Datasets) Compare(otherDatasets *Datasets) []Dataset {
+	missing := []Dataset{}
 
-// 	}
-// }
+	for _, dataset := range d.Dataset {
+		hasDataset := false
+	Inner:
+		for _, otherDataset := range otherDatasets.Dataset {
+			if dataset.Identifier == otherDataset.Identifier {
+				hasDataset = true
+				break Inner
+			}
+		}
+		if hasDataset == false {
+			missing = append(missing, dataset)
+		}
+	}
+	return missing
+}
 
 // Compare compares a given Dataset with the current Dataset
 // Only looks at Identifier
@@ -92,4 +113,20 @@ func (d *Dataset) Compare(otherDataset *Dataset) bool {
 	}
 
 	return true
+}
+
+func (d *Dataset) ResolveURL() (string, error) {
+	// "https://opendata.stadt-muenster.de/api/3/action/package_show?id=6e1bb0a6-fc86-4bcb-90ee-15f62fbcc82c"
+	r, err := req.Get(fmt.Sprintf("https://opendata.stadt-muenster.de/api/3/action/package_show?id=%s", d.Identifier))
+	if err != nil {
+		return "", err
+	}
+
+	var foo PackageResponse
+	err = r.ToJSON(&foo)
+	if err != nil {
+		return "", err
+	}
+
+	return foo.Result[0].URL, nil
 }

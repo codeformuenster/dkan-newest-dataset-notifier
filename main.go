@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/imroc/req"
 )
@@ -40,6 +41,14 @@ func main() {
 
 	fmt.Println(prevDatasets.Size())
 	fmt.Println(currDatasets.Size())
+	missing := currDatasets.Compare(&prevDatasets)
+	for _, m := range missing {
+		url, err := m.ResolveURL()
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Printf("%s: %s %s \n", time.Time(m.Issued).Format("2006-01-02"), m.Title, url)
+	}
 }
 
 func fetchDataset() ([]byte, error) {
