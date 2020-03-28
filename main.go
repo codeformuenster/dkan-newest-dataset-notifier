@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -9,7 +10,15 @@ import (
 	"github.com/imroc/req"
 )
 
-const url = "https://opendata.stadt-muenster.de/data.json"
+const (
+	defaultDataJSONURL = "https://opendata.stadt-muenster.de/data.json"
+	defaultLocalPath   = "./data.json"
+)
+
+var (
+	dataJSONURL string
+	localPath   string
+)
 
 // How this works (at least in my head)
 //
@@ -17,6 +26,11 @@ const url = "https://opendata.stadt-muenster.de/data.json"
 // 2. Compare with previous data.json
 
 func main() {
+	flag.StringVar(&dataJSONURL, "url", defaultDataJSONURL, "url of the remote json file containing dkan datasets")
+	flag.StringVar(&localPath, "local_path", defaultLocalPath, "path to local json file for comparison")
+
+	flag.Parse()
+
 	previousBytes, err := loadPreviousDataset()
 	if err != nil {
 		fmt.Println(err)
@@ -52,8 +66,8 @@ func main() {
 }
 
 func fetchDataset() ([]byte, error) {
-	fmt.Printf("fetching dataset %s\n", url)
-	r, err := req.Get(url)
+	fmt.Printf("fetching dataset %s\n", dataJSONURL)
+	r, err := req.Get(dataJSONURL)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +76,8 @@ func fetchDataset() ([]byte, error) {
 }
 
 func loadPreviousDataset() ([]byte, error) {
-	fmt.Printf("loading dataset from file %s\n", url)
-	return ioutil.ReadFile("/home/gerald/code/dkan-newest-dataset-notifier/data.json")
+	fmt.Printf("loading dataset from file %s\n", localPath)
+	return ioutil.ReadFile(localPath)
 }
 
 func unmarshalDataset(datasetsBytes []byte) (Datasets, error) {
