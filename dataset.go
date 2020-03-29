@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/imroc/req"
 )
 
 type Datasets struct {
-	Dataset []Dataset `json:"dataset"`
+	Dataset []DatasetItem `json:"dataset"`
 }
 
-type Dataset struct {
+type DatasetItem struct {
 	Modified    ISODate `json:"modified"`
 	Issued      ISODate `json:"issued"`
 	Title       string  `json:"title"`
@@ -22,25 +21,10 @@ type Dataset struct {
 	Identifier  string  `json:"identifier"`
 }
 
-type ISODate time.Time
-
 type PackageResponse struct {
 	Result []struct {
 		URL string `json:"url"`
 	} `json:"result"`
-}
-
-func (i *ISODate) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), "\"")
-
-	t, err := time.Parse("2006-01-02", s)
-	if err != nil {
-		return err
-	}
-
-	*i = ISODate(t)
-
-	return nil
 }
 
 func (d *Datasets) UnmarshalJSON(b []byte) error {
@@ -56,7 +40,7 @@ func (d *Datasets) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	datasets := []Dataset{}
+	datasets := []DatasetItem{}
 
 	err = json.Unmarshal(jsonMsg["dataset"], &datasets)
 	if err != nil {
@@ -80,8 +64,8 @@ func (d *Datasets) Size() int {
 }
 
 // Compare compares the given Datasets with the current Datasets
-func (d *Datasets) Compare(otherDatasets *Datasets) []Dataset {
-	missing := []Dataset{}
+func (d *Datasets) Compare(otherDatasets *Datasets) []DatasetItem {
+	missing := []DatasetItem{}
 
 	for _, dataset := range d.Dataset {
 		hasDataset := false
@@ -101,7 +85,7 @@ func (d *Datasets) Compare(otherDatasets *Datasets) []Dataset {
 
 // Compare compares a given Dataset with the current Dataset
 // Only looks at Identifier
-func (d *Dataset) Compare(otherDataset *Dataset) bool {
+func (d *DatasetItem) Compare(otherDataset *DatasetItem) bool {
 	if d.Identifier != otherDataset.Identifier {
 		return false
 	}
@@ -115,7 +99,7 @@ func (d *Dataset) Compare(otherDataset *Dataset) bool {
 	return true
 }
 
-func (d *Dataset) ResolveURL() (string, error) {
+func (d *DatasetItem) ResolveURL() (string, error) {
 	// "https://opendata.stadt-muenster.de/api/3/action/package_show?id=6e1bb0a6-fc86-4bcb-90ee-15f62fbcc82c"
 	r, err := req.Get(fmt.Sprintf("https://opendata.stadt-muenster.de/api/3/action/package_show?id=%s", d.Identifier))
 	if err != nil {

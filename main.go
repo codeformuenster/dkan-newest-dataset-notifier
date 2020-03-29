@@ -63,6 +63,12 @@ func main() {
 		}
 		fmt.Printf("%s: %s %s \n", time.Time(m.Issued).Format("2006-01-02"), m.Title, url)
 	}
+
+	err = saveDatasets(currDatasets, fmt.Sprintf("./data-%s.json", time.Now().Format("2006-01-02")))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 func fetchDataset() ([]byte, error) {
@@ -87,4 +93,13 @@ func unmarshalDataset(datasetsBytes []byte) (Datasets, error) {
 		return Datasets{}, err
 	}
 	return d, nil
+}
+
+func saveDatasets(datasets Datasets, path string) error {
+	datasetBytes, err := json.Marshal(datasets)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(path, datasetBytes, 0644)
 }
