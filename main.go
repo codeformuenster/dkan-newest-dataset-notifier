@@ -32,7 +32,6 @@ func main() {
 	prevDatasets, err := datasets.FromPath(localPath)
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
 
 	currDatasets, err := datasets.FromURL(dataJSONURL)
