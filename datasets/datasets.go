@@ -1,8 +1,8 @@
-package main
+package datasets
 
 import (
 	"encoding/json"
-	"fmt"
+	"io/ioutil"
 	"sort"
 	"time"
 
@@ -11,20 +11,6 @@ import (
 
 type Datasets struct {
 	Dataset []DatasetItem `json:"dataset"`
-}
-
-type DatasetItem struct {
-	Modified    ISODate `json:"modified"`
-	Issued      ISODate `json:"issued"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Identifier  string  `json:"identifier"`
-}
-
-type PackageResponse struct {
-	Result []struct {
-		URL string `json:"url"`
-	} `json:"result"`
 }
 
 func (d *Datasets) UnmarshalJSON(b []byte) error {
@@ -59,10 +45,6 @@ func (d *Datasets) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (d *Datasets) Size() int {
-	return len(d.Dataset)
-}
-
 // Compare compares the given Datasets with the current Datasets
 func (d *Datasets) Compare(otherDatasets *Datasets) []DatasetItem {
 	missing := []DatasetItem{}
@@ -83,34 +65,51 @@ func (d *Datasets) Compare(otherDatasets *Datasets) []DatasetItem {
 	return missing
 }
 
-// Compare compares a given Dataset with the current Dataset
-// Only looks at Identifier
-func (d *DatasetItem) Compare(otherDataset *DatasetItem) bool {
-	if d.Identifier != otherDataset.Identifier {
-		return false
-	}
-	if d.Title != otherDataset.Title {
-		return false
-	}
-	if time.Time(d.Issued).Equal(time.Time(otherDataset.Issued)) == false {
-		return false
+func FromURL(url string) (Datasets, error) {
+	responseBytes, err := fetchDataset(url)
+	if err != nil {
+		return Datasets{}, err
 	}
 
-	return true
+	return unmarshalDataset(responseBytes)
 }
 
-func (d *DatasetItem) ResolveURL() (string, error) {
-	// "https://opendata.stadt-muenster.de/api/3/action/package_show?id=6e1bb0a6-fc86-4bcb-90ee-15f62fbcc82c"
-	r, err := req.Get(fmt.Sprintf("https://opendata.stadt-muenster.de/api/3/action/package_show?id=%s", d.Identifier))
+func FromPath(path string) (Datasets, error) {
+	datasetBytes, err := loadDataset(path)
 	if err != nil {
-		return "", err
+		return Datasets{}, err
 	}
 
-	var foo PackageResponse
-	err = r.ToJSON(&foo)
+	return unmarshalDataset(datasetBytes)
+}
+
+func (d *Datasets) Save(path string) error {
+	datasetBytes, err := json.Marshal(d)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return foo.Result[0].URL, nil
+	return ioutil.WriteFile(path, datasetBytes, 0644)
+}
+
+func fetchDataset(url string) ([]byte, error) {
+	r, err := req.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.ToBytes()
+}
+
+func loadDataset(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
+}
+
+func unmarshalDataset(datasetsBytes []byte) (Datasets, error) {
+	d := Datasets{}
+	err := json.Unmarshal(datasetsBytes, &d)
+	if err != nil {
+		return Datasets{}, err
+	}
+	return d, nil
 }

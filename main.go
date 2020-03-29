@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"time"
 
-	"github.com/imroc/req"
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/datasets"
 )
 
 const (
@@ -22,84 +20,39 @@ var (
 
 // How this works (at least in my head)
 //
-// 1. Download data.json
-// 2. Compare with previous data.json
+// - load local (previous data.json)
+// - Download data.json
+// - Compare with previous data.json
 
 func main() {
 	flag.StringVar(&dataJSONURL, "url", defaultDataJSONURL, "url of the remote json file containing dkan datasets")
 	flag.StringVar(&localPath, "local_path", defaultLocalPath, "path to local json file for comparison")
 
 	flag.Parse()
-
-	previousBytes, err := loadPreviousDataset()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	prevDatasets, err := unmarshalDataset(previousBytes)
+	prevDatasets, err := datasets.FromPath(localPath)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	responseBytes, err := fetchDataset()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	currDatasets, err := unmarshalDataset(responseBytes)
+	currDatasets, err := datasets.FromURL(dataJSONURL)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Println(prevDatasets.Size())
-	fmt.Println(currDatasets.Size())
 	missing := currDatasets.Compare(&prevDatasets)
 	for _, m := range missing {
 		url, err := m.ResolveURL()
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Printf("%s: %s %s \n", time.Time(m.Issued).Format("2006-01-02"), m.Title, url)
+		fmt.Printf("%s: %s %s \n", m.Issued, m.Title, url)
 	}
 
-	err = saveDatasets(currDatasets, fmt.Sprintf("./data-%s.json", time.Now().Format("2006-01-02")))
+	err = currDatasets.Save(fmt.Sprintf("./data-%s.json", time.Now().Format("2006-01-02")))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-}
-
-func fetchDataset() ([]byte, error) {
-	fmt.Printf("fetching dataset %s\n", dataJSONURL)
-	r, err := req.Get(dataJSONURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return r.ToBytes()
-}
-
-func loadPreviousDataset() ([]byte, error) {
-	fmt.Printf("loading dataset from file %s\n", localPath)
-	return ioutil.ReadFile(localPath)
-}
-
-func unmarshalDataset(datasetsBytes []byte) (Datasets, error) {
-	d := Datasets{}
-	err := json.Unmarshal(datasetsBytes, &d)
-	if err != nil {
-		return Datasets{}, err
-	}
-	return d, nil
-}
-
-func saveDatasets(datasets Datasets, path string) error {
-	datasetBytes, err := json.Marshal(datasets)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(path, datasetBytes, 0644)
 }

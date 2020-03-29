@@ -1,4 +1,4 @@
-package main
+package datasets
 
 import (
 	"fmt"
@@ -8,10 +8,12 @@ import (
 
 type ISODate time.Time
 
+const formatTemplate = "2006-01-02"
+
 func (i *ISODate) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 
-	t, err := time.Parse("2006-01-02", s)
+	t, err := time.Parse(formatTemplate, s)
 	if err != nil {
 		return err
 	}
@@ -22,5 +24,9 @@ func (i *ISODate) UnmarshalJSON(b []byte) error {
 }
 
 func (i *ISODate) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%s\"", time.Time(*i).Format("2006-01-02"))), nil
+	return []byte(fmt.Sprintf("\"%s\"", i)), nil
+}
+
+func (i ISODate) String() string {
+	return time.Time(i).Format(formatTemplate)
 }
