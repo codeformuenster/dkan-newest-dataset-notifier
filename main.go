@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"time"
@@ -40,73 +41,69 @@ func main() {
 
 	flag.Parse()
 
-	t, tweeterAvailable := setupTweeter()
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	t, tweeterAvailable, err := setupTweeter()
+	if err != nil {
+		log.Println(err)
+	}
 	if tweeterAvailable == false {
-		fmt.Println("disabling tweeter, no tweets will be created")
+		log.Println("disabling tweeter, no tweets will be created")
 	}
 
 	if localPath == "" {
 		localPath = makeDataPath(time.Now().Add(-24 * time.Hour))
-		fmt.Printf("empty local-path flag, assuming path %s\n", localPath)
+		log.Printf("empty local-path flag, assuming path %s\n", localPath)
 	}
 
 	prevDatasets, err := datasets.FromPath(localPath)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	currDatasets, err := datasets.FromURL(dataJSONURL)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Panicln(err)
 	}
 
 	missing := currDatasets.Compare(&prevDatasets)
 	for _, m := range missing {
-		url, err := m.ResolveURL()
+		tweetText, err := m.ToTweetText()
 		if err != nil {
-			fmt.Println(err)
+			log.Panicln(err)
 		}
-		text := fmt.Sprintf("\"%s\" ist nun als Datensatz im Open-Data-Portal Münster verfügbar %s #OpenData #Münster", m.Title, url)
-		textLen := len(text)
-		if textLen > 280 {
-			fmt.Print("!!!! ")
-		}
-		fmt.Printf("%d %s\n", textLen, text)
+
+		log.Printf("%d %s\n", len(tweetText), tweetText)
 
 		if tweeterAvailable == true {
-			err = t.SendTweet(text)
+			err = t.SendTweet(tweetText)
 			if err != nil {
-				fmt.Println(err)
-				return
+				log.Panicln(err)
 			}
 		}
 	}
 
 	err = currDatasets.Save(makeDataPath(time.Now()))
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Panicln(err)
 	}
 }
 
-func setupTweeter() (tweeter.Tweeter, bool) {
+func setupTweeter() (tweeter.Tweeter, bool, error) {
 	if enableTweeter == false ||
 		consumerKey == "" ||
 		consumerSecret == "" ||
 		accessToken == "" ||
 		accessSecret == "" {
-		return tweeter.Tweeter{}, false
+		return tweeter.Tweeter{}, false, nil
 	}
 
 	t, err := tweeter.NewTweeter(consumerKey, consumerSecret, accessToken, accessSecret)
 	if err != nil {
-		fmt.Println(err)
-		return t, false
+		return t, false, err
 	}
 
-	return t, true
+	return t, true, nil
 }
 
 func makeDataPath(date time.Time) string {
