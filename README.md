@@ -5,3 +5,7 @@ Sends automated tweets containing newly created datasets in the [open data porta
 ## Obtaining the consumerKey, consumerSecret, accessToken, accessSecret values
 
 You have to register an app at developer.twitter.com
+
+## Operation
+
+Operation is powered by GitHub Actions.
