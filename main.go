@@ -70,7 +70,8 @@ func main() {
 	for _, m := range missing {
 		tweetText, err := m.ToTweetText()
 		if err != nil {
-			log.Panicln(err)
+			log.Println(err)
+			continue
 		}
 
 		log.Printf("%d %s\n", len(tweetText), tweetText)
@@ -78,7 +79,8 @@ func main() {
 		if tweeterAvailable == true {
 			err = t.SendTweet(tweetText)
 			if err != nil {
-				log.Panicln(err)
+				log.Println(err)
+				continue
 			}
 		}
 	}
