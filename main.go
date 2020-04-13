@@ -9,18 +9,15 @@ import (
 	"time"
 
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/datasets"
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/externalservices"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/tweeter"
 )
 
-const (
-	defaultDataJSONURL = "https://opendata.stadt-muenster.de/data.json"
-	defaultLocalPath   = ""
-)
+const defaultDataJSONURL = "https://opendata.stadt-muenster.de/data.json"
 
 var (
-	dataJSONURL, localPath                                 string
-	consumerKey, consumerSecret, accessToken, accessSecret string
-	enableTweeter                                          bool
+	dataJSONURL, localPath, externalServicesConfigPath string
+	enableTweeter                                      bool
 )
 
 // How this works (at least in my head)
@@ -30,20 +27,24 @@ var (
 // - Compare with previous data.json
 
 func main() {
-	flag.StringVar(&consumerKey, "consumer-key", "", "twitter oauth1 consumerKey")
-	flag.StringVar(&consumerSecret, "consumer-secret", "", "twitter oauth1 consumerSecret")
-	flag.StringVar(&accessToken, "access-token", "", "twitter oauth1 accessToken")
-	flag.StringVar(&accessSecret, "access-secret", "", "twitter oauth1 accessSecret")
-	flag.BoolVar(&enableTweeter, "enable-tweeter", false, "enable the creation of tweets")
+	flag.BoolVar(&enableTweeter, "enable-twitter", false, "enable the creation of tweets")
 
 	flag.StringVar(&dataJSONURL, "url", defaultDataJSONURL, "url of the remote json file containing dkan datasets")
-	flag.StringVar(&localPath, "local-path", defaultLocalPath, "path to local json file for comparison")
+	flag.StringVar(&localPath, "local-path", "", "path to local json file for comparison")
+
+	flag.StringVar(&externalServicesConfigPath, "config-path", "", "path to local json external services configuration")
 
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
-	t, tweeterAvailable, err := setupTweeter()
+	cfg, err := externalservices.FromFile(externalServicesConfigPath)
+	if err != nil {
+		log.Println(err)
+		log.Println("Disabling external services")
+	}
+
+	t, tweeterAvailable, err := setupTweeter(cfg.TwitterConfig)
 	if err != nil {
 		log.Println(err)
 	}
@@ -91,16 +92,13 @@ func main() {
 	}
 }
 
-func setupTweeter() (tweeter.Tweeter, bool, error) {
+func setupTweeter(cfg externalservices.TwitterConfig) (tweeter.Tweeter, bool, error) {
 	if enableTweeter == false ||
-		consumerKey == "" ||
-		consumerSecret == "" ||
-		accessToken == "" ||
-		accessSecret == "" {
+		cfg.Validate() == false {
 		return tweeter.Tweeter{}, false, nil
 	}
 
-	t, err := tweeter.NewTweeter(consumerKey, consumerSecret, accessToken, accessSecret)
+	t, err := tweeter.NewTweeter(cfg)
 	if err != nil {
 		return t, false, err
 	}

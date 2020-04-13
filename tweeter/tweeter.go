@@ -3,15 +3,17 @@ package tweeter
 import (
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/externalservices"
 )
 
 type Tweeter struct {
 	client *twitter.Client
 }
 
-func NewTweeter(consumerKey, consumerSecret, accessToken, accessSecret string) (Tweeter, error) {
-	config := oauth1.NewConfig(consumerKey, consumerSecret)
-	token := oauth1.NewToken(accessToken, accessSecret)
+func NewTweeter(twitterConfig externalservices.TwitterConfig) (Tweeter, error) {
+	config := oauth1.NewConfig(twitterConfig.ConsumerKey, twitterConfig.ConsumerSecret)
+	token := oauth1.NewToken(twitterConfig.AccessToken, twitterConfig.AccessSecret)
 	// OAuth1 http.Client will automatically authorize Requests
 	httpClient := config.Client(oauth1.NoContext, token)
 
