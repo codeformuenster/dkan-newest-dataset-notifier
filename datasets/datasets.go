@@ -103,6 +103,15 @@ func (d *Datasets) Save(path string) error {
 	return ioutil.WriteFile(path, datasetBytes, 0644)
 }
 
+func (d *Datasets) SaveToS3(path string, s3 s3.S3) error {
+	datasetBytes, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	return s3.PutDataset(path, datasetBytes)
+}
+
 func fetchDataset(url string) ([]byte, error) {
 	r, err := req.Get(url)
 	if err != nil {

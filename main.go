@@ -98,7 +98,12 @@ func main() {
 		}
 	}
 
-	err = currDatasets.Save(makeDataPath(time.Now()))
+	if s3Available == true && len(missing) != 0 {
+		err = currDatasets.SaveToS3(fmt.Sprintf("data-%s.json", time.Now().Format("2006-01-02")), s3Instance)
+	} else {
+		err = currDatasets.Save(makeDataPath(time.Now()))
+
+	}
 	if err != nil {
 		log.Panicln(err)
 	}

@@ -68,3 +68,18 @@ func (s *S3) FetchNewestFile() ([]byte, error) {
 	_, err = buf.ReadFrom(out.Body)
 	return buf.Bytes(), err
 }
+
+func (s *S3) PutDataset(filename string, dataset []byte) error {
+	r := bytes.NewReader(dataset)
+	_, err := s.svc.PutObject(&awss3.PutObjectInput{
+		Bucket: s.bucket,
+		Key:    aws.String(fmt.Sprintf("%s/%s", *s.path, filename)),
+		Body:   r,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
