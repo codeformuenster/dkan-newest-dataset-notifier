@@ -8,4 +8,4 @@ You have to register an app at developer.twitter.com
 
 ## Operation
 
-Operation is powered by GitHub Actions.
+Operation is powered by GitHub Actions & a S3 compatible object storage.

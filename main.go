@@ -10,6 +10,7 @@ import (
 
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/datasets"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/externalservices"
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/s3"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/tweeter"
 )
 
@@ -38,11 +39,15 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
+	var err error
+
 	cfg, err := externalservices.FromFile(externalServicesConfigPath)
 	if err != nil {
 		log.Println(err)
 		log.Println("Disabling external services")
 	}
+
+	s3Instance, s3Available := setupS3(cfg.S3Config)
 
 	t, tweeterAvailable, err := setupTweeter(cfg.TwitterConfig)
 	if err != nil {
@@ -52,12 +57,19 @@ func main() {
 		log.Println("disabling tweeter, no tweets will be created")
 	}
 
-	if localPath == "" {
-		localPath = makeDataPath(time.Now().Add(-24 * time.Hour))
-		log.Printf("empty local-path flag, assuming path %s\n", localPath)
-	}
+	var prevDatasets datasets.Datasets
 
-	prevDatasets, err := datasets.FromPath(localPath)
+	if s3Available == true {
+		prevDatasets, err = datasets.FromS3(s3Instance)
+	} else {
+		if localPath == "" {
+			localPath = makeDataPath(time.Now().Add(-24 * time.Hour))
+			log.Printf("empty local-path flag, assuming path %s\n", localPath)
+		}
+
+		prevDatasets, err = datasets.FromPath(localPath)
+	}
+	// handle error of prev dataset fetch
 	if err != nil {
 		log.Println(err)
 	}
@@ -104,6 +116,10 @@ func setupTweeter(cfg externalservices.TwitterConfig) (tweeter.Tweeter, bool, er
 	}
 
 	return t, true, nil
+}
+
+func setupS3(cfg externalservices.S3Config) (s3.S3, bool) {
+	return s3.NewS3(cfg), cfg.Validate()
 }
 
 func makeDataPath(date time.Time) string {

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/imroc/req"
+
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/s3"
 )
 
 type Datasets struct {
@@ -81,6 +83,15 @@ func FromPath(path string) (Datasets, error) {
 	}
 
 	return unmarshalDataset(datasetBytes)
+}
+
+func FromS3(s3 s3.S3) (Datasets, error) {
+	s3Bytes, err := s3.FetchNewestFile()
+	if err != nil {
+		return Datasets{}, err
+	}
+
+	return unmarshalDataset(s3Bytes)
 }
 
 func (d *Datasets) Save(path string) error {
