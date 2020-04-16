@@ -23,4 +23,4 @@ jobs:
       run: echo '{"twitter":{"consumerKey":"${{ secrets.twitter_consumerkey }}","consumerSecret":"${{ secrets.twitter_consumersecret }}","accessToken":"${{ secrets.twitter_accesstoken }}","accessSecret":"${{ secrets.twitter_accesssecret }}"},"s3":{"region":"${{ secrets.s3_region }}","endpoint":"${{ secrets.s3_endpoint }}","bucket":"${{ secrets.s3_bucket }}","path":"${{ secrets.s3_path }}","accessKeyId":"${{ secrets.s3_accesskey }}","secretAccessKey":"${{ secrets.s3_secretkey }}"}}' > config.json
 
     - name: Execute notifier
-      run: ./bin/dataset-tweeter -enable-twitter=false
+      run: ./bin/dataset-tweeter -enable-twitter=true
