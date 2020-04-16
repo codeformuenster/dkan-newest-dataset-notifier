@@ -38,8 +38,9 @@ func (d *Datasets) UnmarshalJSON(b []byte) error {
 	// sort datasets by Issued field (Date)
 	// The response looks like it is already sorted, but to be sure
 	// sort it again
+	// Sorting also makes sure the oldest datasets come first
 	sort.Slice(datasets, func(i, j int) bool {
-		return time.Time(datasets[i].Issued).After(time.Time(datasets[j].Issued))
+		return time.Time(datasets[i].Issued).Before(time.Time(datasets[j].Issued))
 	})
 
 	*d = Datasets{Dataset: datasets}
