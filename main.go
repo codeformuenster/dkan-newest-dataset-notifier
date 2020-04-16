@@ -95,6 +95,7 @@ func main() {
 				log.Println(err)
 				continue
 			}
+			time.Sleep(30 * time.Second)
 		}
 	}
 
