@@ -33,7 +33,7 @@ func NewS3(s3config externalservices.S3Config) S3 {
 }
 
 func (s *S3) FetchNewestFile() ([]byte, error) {
-	lastModifiedOfNewestFile := time.Now()
+	lastModifiedOfNewestFile := *new(time.Time)
 	filenameOfNewestFile := ""
 
 	err := s.svc.ListObjectsV2Pages(&awss3.ListObjectsV2Input{
@@ -41,7 +41,7 @@ func (s *S3) FetchNewestFile() ([]byte, error) {
 		Bucket: s.bucket,
 	}, func(page *awss3.ListObjectsV2Output, lastPage bool) bool {
 		for _, object := range page.Contents {
-			if object.LastModified.Before(lastModifiedOfNewestFile) {
+			if object.LastModified.After(lastModifiedOfNewestFile) {
 				filenameOfNewestFile = *object.Key
 				lastModifiedOfNewestFile = *object.LastModified
 			}
