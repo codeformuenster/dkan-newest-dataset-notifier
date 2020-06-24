@@ -2,8 +2,7 @@ name: tweet-datasets
 
 on:
   schedule:
-    - cron: '15 17 * * *'
-
+    - cron: '0 8-20/2 * * *'
 jobs:
   scrape-and-tweet:
     runs-on: ubuntu-latest
