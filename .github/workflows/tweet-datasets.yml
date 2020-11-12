@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up Go 1.15
-      uses: actions/setup-go@8a3a76c2171de8c3be20bec507b6d829ccae48ba
+      uses: actions/setup-go@37335c7bb261b353407cff977110895fa0b4f7d8
       with:
         go-version: 1.15
       id: go
 
-    - uses: actions/checkout@2036a08e25fa78bbd946711a407b529a0a1204bf
+    - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
 
     - name: build binary
       run: go build -ldflags="-s -w" -o bin/dataset-tweeter main.go
