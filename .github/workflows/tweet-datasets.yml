@@ -3,7 +3,7 @@ name: tweet-datasets
 on:
   push:
     branches:
-      - main
+      - master
   schedule:
     - cron: '0 16-21/2 * * *'
 jobs:
