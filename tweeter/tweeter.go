@@ -1,6 +1,8 @@
 package tweeter
 
 import (
+	"time"
+
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
 
@@ -16,6 +18,7 @@ func NewTweeter(twitterConfig externalservices.TwitterConfig) (Tweeter, error) {
 	token := oauth1.NewToken(twitterConfig.AccessToken, twitterConfig.AccessSecret)
 	// OAuth1 http.Client will automatically authorize Requests
 	httpClient := config.Client(oauth1.NoContext, token)
+	httpClient.Timeout = 60 * time.Second
 
 	// Twitter client
 	client := twitter.NewClient(httpClient)
