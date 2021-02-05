@@ -51,7 +51,7 @@ func main() {
 
 	t, tweeterAvailable, err := setupTweeter(cfg.TwitterConfig)
 	if err != nil {
-		log.Println(err)
+		log.Panicln(err)
 	}
 	if tweeterAvailable == false {
 		log.Println("disabling tweeter, no tweets will be created")
