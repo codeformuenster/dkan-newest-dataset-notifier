@@ -2,7 +2,7 @@ package datasets
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"sort"
 	"time"
 
@@ -101,7 +101,7 @@ func (d *Datasets) Save(path string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(path, datasetBytes, 0644)
+	return os.WriteFile(path, datasetBytes, 0644)
 }
 
 func (d *Datasets) SaveToS3(path string, s3 s3.S3) error {
@@ -123,7 +123,7 @@ func fetchDataset(url string) ([]byte, error) {
 }
 
 func loadDataset(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+	return os.ReadFile(path)
 }
 
 func unmarshalDataset(datasetsBytes []byte) (Datasets, error) {

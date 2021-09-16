@@ -72,6 +72,7 @@ func main() {
 	// handle error of prev dataset fetch
 	if err != nil {
 		log.Println(err)
+		log.Println("Reading previous datasets failed, assuming empty")
 	}
 
 	currDatasets, err := datasets.FromURL(dataJSONURL)

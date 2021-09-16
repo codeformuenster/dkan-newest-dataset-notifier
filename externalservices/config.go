@@ -2,7 +2,6 @@ package externalservices
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path"
 )
@@ -38,7 +37,7 @@ func FromFile(configPath string) (*Config, error) {
 		configPath = path.Join(dir, "config.json")
 	}
 
-	configBytes, err := ioutil.ReadFile(configPath)
+	configBytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return &Config{}, err
 	}
