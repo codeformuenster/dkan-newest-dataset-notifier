@@ -3,6 +3,7 @@ package datasets
 import (
 	"fmt"
 
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/util"
 	"github.com/imroc/req"
 )
 
@@ -20,13 +21,17 @@ type PackageResponse struct {
 	} `json:"result"`
 }
 
-func (d *DatasetItem) ResolveURL() (string, error) {
-	r, err := req.Get(
-		fmt.Sprintf(
-			"https://opendata.stadt-muenster.de/api/3/action/package_show?id=%s",
-			d.Identifier,
-		),
-	)
+func (d *DatasetItem) ResolveURL(baseURL string) (string, error) {
+	apiURL, err := util.MakeURL(fmt.Sprintf(
+		"%s/api/3/action/package_show?id=%s",
+		baseURL,
+		d.Identifier,
+	))
+	if err != nil {
+		return "", err
+	}
+
+	r, err := req.Get(apiURL)
 	if err != nil {
 		return "", err
 	}
@@ -40,8 +45,8 @@ func (d *DatasetItem) ResolveURL() (string, error) {
 	return foo.Result[0].URL, nil
 }
 
-func (d *DatasetItem) ToTweetText() (string, error) {
-	url, err := d.ResolveURL()
+func (d *DatasetItem) ToTweetText(baseURL string) (string, error) {
+	url, err := d.ResolveURL(baseURL)
 	if err != nil {
 		return "", err
 	}

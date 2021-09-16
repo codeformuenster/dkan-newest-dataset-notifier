@@ -12,13 +12,14 @@ import (
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/externalservices"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/s3"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/tweeter"
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/util"
 )
 
-const defaultDataJSONURL = "https://opendata.stadt-muenster.de/data.json"
+const defaultDKANInstance = "https://opendata.stadt-muenster.de"
 
 var (
-	dataJSONURL, localPath, externalServicesConfigPath string
-	enableTweeter                                      bool
+	dkanInstanceURL, localPath, externalServicesConfigPath string
+	enableTweeter                                          bool
 )
 
 // How this works (at least in my head)
@@ -30,7 +31,7 @@ var (
 func main() {
 	flag.BoolVar(&enableTweeter, "enable-twitter", false, "enable the creation of tweets")
 
-	flag.StringVar(&dataJSONURL, "url", defaultDataJSONURL, "url of the remote json file containing dkan datasets")
+	flag.StringVar(&dkanInstanceURL, "url", defaultDKANInstance, "base url of the dkan instance (https://...)")
 	flag.StringVar(&localPath, "local-path", "", "path to local json file for comparison")
 
 	flag.StringVar(&externalServicesConfigPath, "config-path", "", "path to local json external services configuration")
@@ -40,6 +41,13 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	var err error
+
+	// validate + constructr dkan urls
+	datasetsURL, err := util.MakeURL(fmt.Sprintf("%s/%s", dkanInstanceURL, "data.json"))
+	if err != nil {
+		log.Printf("Could not create valid datasets URL")
+		log.Panicln(err)
+	}
 
 	cfg, err := externalservices.FromFile(externalServicesConfigPath)
 	if err != nil {
@@ -53,13 +61,13 @@ func main() {
 	if err != nil {
 		log.Panicln(err)
 	}
-	if tweeterAvailable == false {
+	if !tweeterAvailable {
 		log.Println("disabling tweeter, no tweets will be created")
 	}
 
 	var prevDatasets datasets.Datasets
 
-	if s3Available == true {
+	if s3Available {
 		prevDatasets, err = datasets.FromS3(s3Instance)
 	} else {
 		if localPath == "" {
@@ -75,14 +83,14 @@ func main() {
 		log.Println("Reading previous datasets failed, assuming empty")
 	}
 
-	currDatasets, err := datasets.FromURL(dataJSONURL)
+	currDatasets, err := datasets.FromURL(datasetsURL)
 	if err != nil {
 		log.Panicln(err)
 	}
 
 	missing := currDatasets.Compare(&prevDatasets)
 	for _, m := range missing {
-		tweetText, err := m.ToTweetText()
+		tweetText, err := m.ToTweetText(dkanInstanceURL)
 		if err != nil {
 			log.Println(err)
 			continue
@@ -90,7 +98,7 @@ func main() {
 
 		log.Printf("%d %s\n", len(tweetText), tweetText)
 
-		if tweeterAvailable == true {
+		if tweeterAvailable {
 			err = t.SendTweet(tweetText)
 			if err != nil {
 				log.Println(err)
@@ -100,22 +108,26 @@ func main() {
 		}
 	}
 
-	if s3Available == true {
-		if len(missing) != 0 {
-			err = currDatasets.SaveToS3(fmt.Sprintf("data-%s.json", time.Now().Format("2006-01-02")), s3Instance)
-		}
-	} else {
-		err = currDatasets.Save(makeDataPath(time.Now()))
+	{
+		var err error
 
-	}
-	if err != nil {
-		log.Panicln(err)
+		if s3Available {
+			if len(missing) != 0 {
+				err = currDatasets.SaveToS3(fmt.Sprintf("data-%s.json", time.Now().Format("2006-01-02")), s3Instance)
+			}
+		} else {
+			err = currDatasets.Save(makeDataPath(time.Now()))
+
+		}
+		if err != nil {
+			log.Panicln(err)
+		}
+
 	}
 }
 
 func setupTweeter(cfg externalservices.TwitterConfig) (tweeter.Tweeter, bool, error) {
-	if enableTweeter == false ||
-		cfg.Validate() == false {
+	if !enableTweeter || !cfg.Validate() {
 		return tweeter.Tweeter{}, false, nil
 	}
 
