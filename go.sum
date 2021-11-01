@@ -1,5 +1,5 @@
-github.com/aws/aws-sdk-go v1.41.9 h1:Xb4gWjA90ju0u6Fr2lMAsMOGuhw1g4sTFOqh9SUHgN0=
-github.com/aws/aws-sdk-go v1.41.9/go.mod h1:585smgzpB/KqRA+K3y/NL/oYRqQvpNJYvLm+LY1U59Q=
+github.com/aws/aws-sdk-go v1.41.14 h1:zJnJ8Y964DjyRE55UVoMKgOG4w5i88LpN6xSpBX7z84=
+github.com/aws/aws-sdk-go v1.41.14/go.mod h1:585smgzpB/KqRA+K3y/NL/oYRqQvpNJYvLm+LY1U59Q=
 github.com/cenkalti/backoff v2.1.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
