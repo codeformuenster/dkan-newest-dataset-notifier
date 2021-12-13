@@ -19,7 +19,7 @@ const defaultDKANInstance = "https://opendata.stadt-muenster.de"
 
 var (
 	dkanInstanceURL, localPath, externalServicesConfigPath string
-	enableTweeter                                          bool
+	enableTweeter, allowEmpty                              bool
 )
 
 // How this works (at least in my head)
@@ -30,6 +30,7 @@ var (
 
 func main() {
 	flag.BoolVar(&enableTweeter, "enable-twitter", false, "enable the creation of tweets")
+	flag.BoolVar(&allowEmpty, "allow-empty", false, "allow empty previous dataset, for initialization")
 
 	flag.StringVar(&dkanInstanceURL, "url", defaultDKANInstance, "base url of the dkan instance (https://...)")
 	flag.StringVar(&localPath, "local-path", "", "path to local json file for comparison")
@@ -83,6 +84,11 @@ func main() {
 		log.Println("Reading previous datasets failed, assuming empty")
 	}
 
+	if !allowEmpty && len(prevDatasets.Dataset) == 0 {
+		log.Println("Empty previous datasets not allowed")
+		return
+	}
+
 	currDatasets, err := datasets.FromURL(datasetsURL)
 	if err != nil {
 		log.Panicln(err)
@@ -117,12 +123,10 @@ func main() {
 			}
 		} else {
 			err = currDatasets.Save(makeDataPath(time.Now()))
-
 		}
 		if err != nil {
 			log.Panicln(err)
 		}
-
 	}
 }
 
