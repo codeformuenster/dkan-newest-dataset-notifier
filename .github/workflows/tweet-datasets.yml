@@ -6,6 +6,7 @@ on:
       - master
   schedule:
     - cron: '0 16-21/2 * * *'
+  workflow_dispatch: {}
 jobs:
   scrape-and-tweet:
     runs-on: ubuntu-latest
