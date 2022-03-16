@@ -15,7 +15,7 @@ jobs:
 
     - name: build binary
       env:
-        GOAMD64: v4
+        GOAMD64: v3
       run: go build -ldflags="-s -w" -o bin/dataset-tweeter main.go
 
     - name: Execute notifier
