@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	TwitterConfig TwitterConfig `json:"twitter"`
-	S3Config      S3Config      `json:"s3"`
+	TwitterConfig  TwitterConfig  `json:"twitter"`
+	S3Config       S3Config       `json:"s3"`
+	MastodonConfig MastodonConfig `json:"mastodon"`
 }
 
 type TwitterConfig struct {
@@ -16,6 +17,12 @@ type TwitterConfig struct {
 	ConsumerSecret string `json:"consumerSecret"`
 	AccessToken    string `json:"accessToken"`
 	AccessSecret   string `json:"accessSecret"`
+}
+
+type MastodonConfig struct {
+	Server       string `json:"server"`
+	ClientID     string `json:"clientID"`
+	ClientSecret string `json:"clientSecret"`
 }
 
 type S3Config struct {
@@ -61,6 +68,19 @@ func (t *TwitterConfig) Validate() bool {
 		return false
 	}
 	if t.AccessSecret == "" {
+		return false
+	}
+	return true
+}
+
+func (m *MastodonConfig) Validate() bool {
+	if m.Server == "" {
+		return false
+	}
+	if m.ClientID == "" {
+		return false
+	}
+	if m.ClientSecret == "" {
 		return false
 	}
 	return true

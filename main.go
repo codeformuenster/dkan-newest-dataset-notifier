@@ -11,7 +11,7 @@ import (
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/datasets"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/externalservices"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/s3"
-	"github.com/codeformuenster/dkan-newest-dataset-notifier/tweeter"
+	"github.com/codeformuenster/dkan-newest-dataset-notifier/tooter"
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/util"
 )
 
@@ -29,7 +29,7 @@ var (
 // - Compare with previous data.json
 
 func main() {
-	flag.BoolVar(&enableTweeter, "enable-twitter", false, "enable the creation of tweets")
+	flag.BoolVar(&enableTweeter, "enable-tooter", false, "enable the creation of toots")
 	flag.BoolVar(&allowEmpty, "allow-empty", false, "allow empty previous dataset, for initialization")
 
 	flag.StringVar(&dkanInstanceURL, "url", defaultDKANInstance, "base url of the dkan instance (https://...)")
@@ -58,12 +58,12 @@ func main() {
 
 	s3Instance, s3Available := setupS3(cfg.S3Config)
 
-	t, tweeterAvailable, err := setupTweeter(cfg.TwitterConfig)
+	t, tweeterAvailable, err := setupMastodon(cfg.MastodonConfig)
 	if err != nil {
 		log.Panicln(err)
 	}
 	if !tweeterAvailable {
-		log.Println("disabling tweeter, no tweets will be created")
+		log.Println("disabling tooter, no toots will be created")
 	}
 
 	var prevDatasets datasets.Datasets
@@ -105,7 +105,7 @@ func main() {
 		log.Printf("%d %s\n", len(tweetText), tweetText)
 
 		if tweeterAvailable {
-			err = t.SendTweet(tweetText)
+			err = t.SendToot(tweetText)
 			if err != nil {
 				log.Println(err)
 				continue
@@ -130,12 +130,12 @@ func main() {
 	}
 }
 
-func setupTweeter(cfg externalservices.TwitterConfig) (tweeter.Tweeter, bool, error) {
+func setupMastodon(cfg externalservices.MastodonConfig) (tooter.Tooter, bool, error) {
 	if !enableTweeter || !cfg.Validate() {
-		return tweeter.Tweeter{}, false, nil
+		return tooter.Tooter{}, false, nil
 	}
 
-	t, err := tweeter.NewTweeter(cfg)
+	t, err := tooter.NewTooter(cfg)
 	if err != nil {
 		return t, false, err
 	}
