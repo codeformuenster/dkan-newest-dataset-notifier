@@ -58,11 +58,11 @@ func main() {
 
 	s3Instance, s3Available := setupS3(cfg.S3Config)
 
-	t, tweeterAvailable, err := setupMastodon(cfg.MastodonConfig)
+	t, tooterAvailable, err := setupMastodon(cfg.MastodonConfig)
 	if err != nil {
 		log.Panicln(err)
 	}
-	if !tweeterAvailable {
+	if !tooterAvailable {
 		log.Println("disabling tooter, no toots will be created")
 	}
 
@@ -96,16 +96,16 @@ func main() {
 
 	missing := currDatasets.Compare(&prevDatasets)
 	for _, m := range missing {
-		tweetText, err := m.ToTweetText(dkanInstanceURL)
+		tootText, err := m.ToTootText(dkanInstanceURL)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
-		log.Printf("%d %s\n", len(tweetText), tweetText)
+		log.Printf("%d %s\n", len(tootText), tootText)
 
-		if tweeterAvailable {
-			err = t.SendToot(tweetText)
+		if tooterAvailable {
+			err = t.SendToot(tootText)
 			if err != nil {
 				log.Println(err)
 				continue

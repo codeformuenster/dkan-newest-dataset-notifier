@@ -23,6 +23,9 @@ type MastodonConfig struct {
 	Server       string `json:"server"`
 	ClientID     string `json:"clientID"`
 	ClientSecret string `json:"clientSecret"`
+	AccessToken  string `json:"accessToken"`
+	Email        string `json:"email"`
+	Password     string `json:"password"`
 }
 
 type S3Config struct {
@@ -81,6 +84,15 @@ func (m *MastodonConfig) Validate() bool {
 		return false
 	}
 	if m.ClientSecret == "" {
+		return false
+	}
+	if m.AccessToken == "" {
+		return false
+	}
+	if m.Email == "" {
+		return false
+	}
+	if m.Password == "" {
 		return false
 	}
 	return true
