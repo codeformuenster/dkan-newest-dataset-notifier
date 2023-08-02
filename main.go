@@ -19,7 +19,7 @@ const defaultDKANInstance = "https://opendata.stadt-muenster.de"
 
 var (
 	dkanInstanceURL, localPath, externalServicesConfigPath string
-	enableTweeter, allowEmpty                              bool
+	enableTweeter, allowEmpty, tootUnlisted                bool
 )
 
 // How this works (at least in my head)
@@ -31,6 +31,7 @@ var (
 func main() {
 	flag.BoolVar(&enableTweeter, "enable-tooter", false, "enable the creation of toots")
 	flag.BoolVar(&allowEmpty, "allow-empty", false, "allow empty previous dataset, for initialization")
+	flag.BoolVar(&tootUnlisted, "toot-unlisted", false, "toot unlisted instead of public, for initialization")
 
 	flag.StringVar(&dkanInstanceURL, "url", defaultDKANInstance, "base url of the dkan instance (https://...)")
 	flag.StringVar(&localPath, "local-path", "", "path to local json file for comparison")
@@ -105,12 +106,16 @@ func main() {
 		log.Printf("%d %s\n", len(tootText), tootText)
 
 		if tooterAvailable {
-			err = t.SendToot(tootText)
+			visibility := "public"
+			if tootUnlisted {
+				visibility = "unlisted"
+			}
+			err = t.SendToot(tootText, visibility)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
-			time.Sleep(30 * time.Second)
+			time.Sleep(10 * time.Second)
 		}
 	}
 

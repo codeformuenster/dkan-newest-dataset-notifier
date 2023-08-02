@@ -30,8 +30,8 @@ func NewTooter(mastodonConfig externalservices.MastodonConfig) (Tooter, error) {
 	return Tooter{c, ctx}, nil
 }
 
-func (t *Tooter) SendToot(text string) error {
-	toot := mastodon.Toot{Status: text}
+func (t *Tooter) SendToot(text, visibility string) error {
+	toot := mastodon.Toot{Status: text, Visibility: visibility}
 
 	_, err := t.client.PostStatus(t.context, &toot)
 	if err != nil {
