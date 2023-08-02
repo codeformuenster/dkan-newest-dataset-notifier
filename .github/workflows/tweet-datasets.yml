@@ -29,4 +29,4 @@ jobs:
       run: echo '{"mastodon":{"server":"https://muenster.im","clientID":"${{ secrets.mastodon_client_id }}","clientSecret":"${{ secrets.mastodon_client_secret }}","accessToken":"${{ secrets.mastodon_access_token }}","email":"${{ secrets.mastodon_email }}","password":"${{ secrets.mastodon_password }}"},"s3":{"region":"${{ secrets.s3_region }}","endpoint":"${{ secrets.s3_endpoint }}","bucket":"${{ secrets.s3_bucket }}","path":"${{ secrets.s3_path }}","accessKeyId":"${{ secrets.s3_accesskey }}","secretAccessKey":"${{ secrets.s3_secretkey }}"}}' > config.json
 
     - name: Execute notifier
-      run: ./bin/dataset-tooter -enable-tooter=true
+      run: ./bin/dataset-tooter -enable-tooter=true -allow-empty
