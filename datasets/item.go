@@ -45,7 +45,7 @@ func (d *DatasetItem) ResolveURL(baseURL string) (string, error) {
 	return foo.Result[0].URL, nil
 }
 
-func (d *DatasetItem) ToTweetText(baseURL string) (string, error) {
+func (d *DatasetItem) ToTootText(baseURL string) (string, error) {
 	url, err := d.ResolveURL(baseURL)
 	if err != nil {
 		return "", err

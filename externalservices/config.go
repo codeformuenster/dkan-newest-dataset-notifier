@@ -7,15 +7,17 @@ import (
 )
 
 type Config struct {
-	TwitterConfig TwitterConfig `json:"twitter"`
-	S3Config      S3Config      `json:"s3"`
+	S3Config       S3Config       `json:"s3"`
+	MastodonConfig MastodonConfig `json:"mastodon"`
 }
 
-type TwitterConfig struct {
-	ConsumerKey    string `json:"consumerKey"`
-	ConsumerSecret string `json:"consumerSecret"`
-	AccessToken    string `json:"accessToken"`
-	AccessSecret   string `json:"accessSecret"`
+type MastodonConfig struct {
+	Server       string `json:"server"`
+	ClientID     string `json:"clientID"`
+	ClientSecret string `json:"clientSecret"`
+	AccessToken  string `json:"accessToken"`
+	Email        string `json:"email"`
+	Password     string `json:"password"`
 }
 
 type S3Config struct {
@@ -50,17 +52,23 @@ func FromFile(configPath string) (*Config, error) {
 	return &c, nil
 }
 
-func (t *TwitterConfig) Validate() bool {
-	if t.ConsumerKey == "" {
+func (m *MastodonConfig) Validate() bool {
+	if m.Server == "" {
 		return false
 	}
-	if t.ConsumerSecret == "" {
+	if m.ClientID == "" {
 		return false
 	}
-	if t.AccessToken == "" {
+	if m.ClientSecret == "" {
 		return false
 	}
-	if t.AccessSecret == "" {
+	if m.AccessToken == "" {
+		return false
+	}
+	if m.Email == "" {
+		return false
+	}
+	if m.Password == "" {
 		return false
 	}
 	return true
