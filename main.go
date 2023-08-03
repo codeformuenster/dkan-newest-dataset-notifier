@@ -18,8 +18,8 @@ import (
 const defaultDKANInstance = "https://opendata.stadt-muenster.de"
 
 var (
-	dkanInstanceURL, localPath, externalServicesConfigPath string
-	enableTweeter, allowEmpty, tootUnlisted                bool
+	dkanInstanceURL, localPath, externalServicesConfigPath       string
+	enableTweeter, allowEmpty, tootUnlisted, reverseDkanResponse bool
 )
 
 // How this works (at least in my head)
@@ -32,6 +32,7 @@ func main() {
 	flag.BoolVar(&enableTweeter, "enable-tooter", false, "enable the creation of toots")
 	flag.BoolVar(&allowEmpty, "allow-empty", false, "allow empty previous dataset, for initialization")
 	flag.BoolVar(&tootUnlisted, "toot-unlisted", false, "toot unlisted instead of public, for initialization")
+	flag.BoolVar(&reverseDkanResponse, "reverse-dkan-response", false, "reverse dataset list from DKAN, for initialization")
 
 	flag.StringVar(&dkanInstanceURL, "url", defaultDKANInstance, "base url of the dkan instance (https://...)")
 	flag.StringVar(&localPath, "local-path", "", "path to local json file for comparison")
@@ -93,6 +94,11 @@ func main() {
 	currDatasets, err := datasets.FromURL(datasetsURL)
 	if err != nil {
 		log.Panicln(err)
+	}
+
+	if reverseDkanResponse {
+		prevDatasets.Reverse()
+		currDatasets.Reverse()
 	}
 
 	missing := currDatasets.Compare(&prevDatasets)

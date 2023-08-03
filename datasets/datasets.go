@@ -3,8 +3,6 @@ package datasets
 import (
 	"encoding/json"
 	"os"
-	"sort"
-	"time"
 
 	"github.com/imroc/req"
 
@@ -35,14 +33,9 @@ func (d *Datasets) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	// sort datasets by Issued field (Date)
-	// The response looks like it is already sorted, but to be sure
-	// sort it again
-	// Sorting also makes sure the oldest datasets come first
-	sort.Slice(datasets, func(i, j int) bool {
-		return time.Time(datasets[i].Issued).Before(time.Time(datasets[j].Issued))
-	})
-
+	// Field Issued does not do anything.. Its always the date of the request
+	// This probably changed recently..
+	// we're assuming the response is sorted so that newest is first.
 	*d = Datasets{Dataset: datasets}
 
 	return nil
@@ -66,6 +59,12 @@ func (d *Datasets) Compare(otherDatasets *Datasets) []DatasetItem {
 		}
 	}
 	return missing
+}
+
+func (d *Datasets) Reverse() {
+	for i, j := 0, len(d.Dataset)-1; i < j; i, j = i+1, j-1 {
+		d.Dataset[i], d.Dataset[j] = d.Dataset[j], d.Dataset[i]
+	}
 }
 
 func FromURL(url string) (Datasets, error) {
