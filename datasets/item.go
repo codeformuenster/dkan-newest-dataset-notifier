@@ -2,6 +2,7 @@ package datasets
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/codeformuenster/dkan-newest-dataset-notifier/util"
 	"github.com/imroc/req"
@@ -54,7 +55,7 @@ func (d *DatasetItem) ToTootText(baseURL string) (string, error) {
 	for _, template := range tweetTemplates {
 		text = fmt.Sprintf(
 			template,
-			d.Title, url,
+			strings.TrimSpace(d.Title), url,
 		)
 		if len(text) < 280 {
 			return text, nil
