@@ -1,6 +1,8 @@
 module github.com/codeformuenster/dkan-newest-dataset-notifier
 
-go 1.20
+go 1.22
+
+toolchain go1.22.4
 
 require (
 	github.com/aws/aws-sdk-go v1.53.14
