@@ -7,7 +7,7 @@ toolchain go1.22.4
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/imroc/req v0.3.2
-	github.com/mattn/go-mastodon v0.0.8
+	github.com/mattn/go-mastodon v0.0.9
 )
 
 require (
