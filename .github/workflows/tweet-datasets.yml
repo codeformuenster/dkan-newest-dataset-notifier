@@ -7,16 +7,21 @@ on:
   schedule:
     - cron: '0 16-21/2 * * *'
   workflow_dispatch: {}
+
+permissions: {}
+
 jobs:
   scrape-and-tweet:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
-    - name: Set up Go 1.22
+    - name: Set up Go 1.23
       uses: actions/setup-go@v5
       with:
-        go-version: "1.22"
+        go-version: "1.23"
         check-latest: true
         cache: true
 
