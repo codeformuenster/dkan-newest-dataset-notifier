@@ -1,7 +1,6 @@
 module github.com/codeformuenster/dkan-newest-dataset-notifier
 
 go 1.23
-
 toolchain go1.23.5
 
 require (
@@ -15,5 +14,5 @@ require (
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 )
