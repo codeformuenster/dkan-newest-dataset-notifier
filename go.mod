@@ -3,7 +3,7 @@ module github.com/codeformuenster/dkan-newest-dataset-notifier
 go 1.24.1
 
 require (
-	github.com/aws/aws-sdk-go v1.55.6
+	github.com/aws/aws-sdk-go v1.55.7
 	github.com/imroc/req v0.3.2
 	github.com/mattn/go-mastodon v0.0.9
 )
